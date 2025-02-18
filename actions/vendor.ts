@@ -2,8 +2,6 @@
 
 import { auth } from "@/auth";
 import db from "@/lib/db";
-import { put } from "@vercel/blob";
-import { redirect } from "next/navigation";
 
 export const createVendor = async (state: any, formData: FormData) => {
   const session = await auth();
@@ -12,38 +10,15 @@ export const createVendor = async (state: any, formData: FormData) => {
       error: "Unauthorized",
     };
   }
+
   try {
     const name = formData.get("name") as string;
     const shopName = formData.get("shopName") as string;
     const phone = formData.get("phone") as string;
     const address = formData.get("address") as string;
-    const fssai = formData.get("fssai") as File;
-    const gst = formData.get("gst") as File;
-    const price_menu = formData.get("price_menu") as File;
-
-    const { url: fssai_url } = await put(
-      `${session.user?.email}/${fssai.name}`,
-      fssai,
-      {
-        access: "public",
-      }
-    );
-
-    const { url: gst_url } = await put(
-      `${session.user?.email}/${gst.name}`,
-      gst,
-      {
-        access: "public",
-      }
-    );
-
-    const { url: price_menu_url } = await put(
-      `${session.user?.email}/${price_menu.name}`,
-      price_menu,
-      {
-        access: "public",
-      }
-    );
+    const fssai_url = formData.get("fssai_url") as string;
+    const gst_url = formData.get("gst_url") as string;
+    const price_menu_url = formData.get("price_menu_url") as string;
 
     await db.$transaction(async (prisma) => {
       // Update user role to VENDOR
@@ -72,12 +47,12 @@ export const createVendor = async (state: any, formData: FormData) => {
       });
       console.log("New vendor created:", newVendor);
     });
+
     return {
       success: "Vendor created successfully",
     };
   } catch (error) {
     console.error("Error creating vendor:", error);
-    // Handle error (e.g., redirect to an error page or return an error message)
     return {
       error: "Failed to create vendor",
     };
