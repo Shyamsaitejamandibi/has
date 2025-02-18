@@ -65,12 +65,11 @@ export default function MyForm() {
     setIsUploading(true);
 
     try {
-      const formData = new FormData(event.currentTarget);
+      const form = event.currentTarget;
       const files = {
-        fssai: (event.currentTarget.fssai as HTMLInputElement).files?.[0],
-        gst: (event.currentTarget.gst as HTMLInputElement).files?.[0],
-        price_menu: (event.currentTarget.price_menu as HTMLInputElement)
-          .files?.[0],
+        fssai: (form.fssai as HTMLInputElement).files?.[0],
+        gst: (form.gst as HTMLInputElement).files?.[0],
+        price_menu: (form.price_menu as HTMLInputElement).files?.[0],
       };
 
       // Validate all files first
@@ -99,9 +98,15 @@ export default function MyForm() {
         }),
       ]);
 
-      formData.set("fssai_url", fssaiBlob.url);
-      formData.set("gst_url", gstBlob.url);
-      formData.set("price_menu_url", priceMenuBlob.url);
+      // Create new FormData with only the required fields
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("shopName", form.shopName);
+      formData.append("phone", form.phone);
+      formData.append("address", form.address);
+      formData.append("fssai_url", fssaiBlob.url);
+      formData.append("gst_url", gstBlob.url);
+      formData.append("price_menu_url", priceMenuBlob.url);
 
       startTransition(() => {
         formAction(formData);
@@ -117,6 +122,9 @@ export default function MyForm() {
 
   const hasFileErrors = Object.keys(fileErrors).length > 0;
 
+  // Combined loading state
+  const isLoading = isUploading || isPending;
+
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
@@ -126,7 +134,7 @@ export default function MyForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <fieldset disabled={isUploading} className="space-y-4">
+          <fieldset disabled={isLoading} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Vendor Name</Label>
@@ -212,13 +220,13 @@ export default function MyForm() {
 
             <Button
               type="submit"
-              disabled={isUploading || hasFileErrors}
+              disabled={isLoading || hasFileErrors}
               className="w-full"
             >
-              {isUploading ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading Files...
+                  {isUploading ? "Uploading Files..." : "Creating Vendor..."}
                 </>
               ) : (
                 "Create Vendor"
