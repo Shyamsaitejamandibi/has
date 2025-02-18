@@ -23,7 +23,7 @@ export default function MyForm() {
     } else if (state.error) {
       toast.error(state.error);
     }
-  }, [state]);
+  }, [router, state]);
 
   return (
     <form

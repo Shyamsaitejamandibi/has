@@ -3,12 +3,12 @@ import db from "@/lib/db";
 import { redirect } from "next/navigation";
 import { VendorDashboard } from "../_components/vendor-dashboard";
 
-export const VendorDashboardPage = async (props: {
-  params: Promise<{
-    id: string;
-  }>;
-}) => {
-  const params = await props.params;
+export default async function VendorDashboardPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const param = await params;
   const session = await auth();
   if (!session) {
     redirect("/");
@@ -16,7 +16,7 @@ export const VendorDashboardPage = async (props: {
 
   const vendor = await db.vendor.findFirst({
     where: {
-      id: params.id,
+      id: param.id,
     },
   });
 
@@ -25,6 +25,4 @@ export const VendorDashboardPage = async (props: {
   }
 
   return <VendorDashboard vendor={vendor} />;
-};
-
-export default VendorDashboardPage;
+}
