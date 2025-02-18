@@ -9,6 +9,11 @@ import { Label } from "./ui/label";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { AlertCircle, Upload, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
 export default function MyForm() {
   const [state, formAction, isPending] = useActionState(createVendor, {
@@ -18,6 +23,33 @@ export default function MyForm() {
 
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
+  const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
+
+  const validateFile = (file: File, fieldName: string) => {
+    if (file.size > MAX_FILE_SIZE) {
+      setFileErrors((prev) => ({
+        ...prev,
+        [fieldName]: `File size must be less than 5MB. Current size: ${(
+          file.size /
+          (1024 * 1024)
+        ).toFixed(2)}MB`,
+      }));
+      return false;
+    }
+    setFileErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];
+      return newErrors;
+    });
+    return true;
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      validateFile(file, event.target.name);
+    }
+  };
 
   useEffect(() => {
     if (state.success) {
@@ -34,40 +66,43 @@ export default function MyForm() {
 
     try {
       const formData = new FormData(event.currentTarget);
+      const files = {
+        fssai: (event.currentTarget.fssai as HTMLInputElement).files?.[0],
+        gst: (event.currentTarget.gst as HTMLInputElement).files?.[0],
+        price_menu: (event.currentTarget.price_menu as HTMLInputElement)
+          .files?.[0],
+      };
 
-      // Handle file uploads first
-      const fssaiFile = (event.currentTarget.fssai as HTMLInputElement)
-        .files?.[0];
-      const gstFile = (event.currentTarget.gst as HTMLInputElement).files?.[0];
-      const priceMenuFile = (event.currentTarget.price_menu as HTMLInputElement)
-        .files?.[0];
-
-      if (!fssaiFile || !gstFile || !priceMenuFile) {
-        throw new Error("All files are required");
+      // Validate all files first
+      for (const [key, file] of Object.entries(files)) {
+        if (!file) {
+          throw new Error(`${key.toUpperCase()} file is required`);
+        }
+        if (!validateFile(file, key)) {
+          throw new Error(`Invalid file size for ${key.toUpperCase()}`);
+        }
       }
 
       // Upload files and get URLs
       const [fssaiBlob, gstBlob, priceMenuBlob] = await Promise.all([
-        upload(fssaiFile.name, fssaiFile, {
+        upload(files.fssai?.name ?? "", files.fssai!, {
           access: "public",
           handleUploadUrl: "/api/upload",
         }),
-        upload(gstFile.name, gstFile, {
+        upload(files.gst?.name ?? "", files.gst!, {
           access: "public",
           handleUploadUrl: "/api/upload",
         }),
-        upload(priceMenuFile.name, priceMenuFile, {
+        upload(files.price_menu?.name ?? "", files.price_menu!, {
           access: "public",
           handleUploadUrl: "/api/upload",
         }),
       ]);
 
-      // Update formData with file URLs
       formData.set("fssai_url", fssaiBlob.url);
       formData.set("gst_url", gstBlob.url);
       formData.set("price_menu_url", priceMenuBlob.url);
 
-      // Dispatch the action correctly inside startTransition
       startTransition(() => {
         formAction(formData);
       });
@@ -80,59 +115,118 @@ export default function MyForm() {
     }
   }
 
+  const hasFileErrors = Object.keys(fileErrors).length > 0;
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md space-y-4"
-    >
-      <fieldset disabled={isUploading} className="space-y-3">
-        <legend className="text-lg font-semibold">Vendor Details</legend>
-        <div>
-          <Label htmlFor="name" className="block text-sm font-medium">
-            Vendor Name
-          </Label>
-          <Input id="name" name="name" type="text" required />
-        </div>
-        <div>
-          <Label htmlFor="shopName" className="block text-sm font-medium">
-            Shop Name
-          </Label>
-          <Input id="shopName" name="shopName" type="text" required />
-        </div>
-        <div>
-          <Label htmlFor="phone" className="block text-sm font-medium">
-            Phone Number
-          </Label>
-          <Input id="phone" name="phone" type="tel" required />
-        </div>
-        <div>
-          <Label htmlFor="address" className="block text-sm font-medium">
-            Address
-          </Label>
-          <Input id="address" name="address" type="text" required />
-        </div>
-        <div>
-          <Label htmlFor="fssai" className="block text-sm font-medium">
-            FSSAI Certificate
-          </Label>
-          <Input id="fssai" name="fssai" type="file" required />
-        </div>
-        <div>
-          <Label htmlFor="gst" className="block text-sm font-medium">
-            GST Certificate
-          </Label>
-          <Input id="gst" name="gst" type="file" required />
-        </div>
-        <div>
-          <Label htmlFor="price_menu" className="block text-sm font-medium">
-            Price Menu
-          </Label>
-          <Input id="price_menu" name="price_menu" type="file" required />
-        </div>
-        <Button type="submit" disabled={isUploading} className="w-full mt-4">
-          {isUploading ? "Uploading Files..." : "Create Vendor"}
-        </Button>
-      </fieldset>
-    </form>
+    <Card className="max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-center">
+          Vendor Registration
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <fieldset disabled={isUploading} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Vendor Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Enter vendor name"
+                  className="w-full"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shopName">Shop Name</Label>
+                <Input
+                  id="shopName"
+                  name="shopName"
+                  type="text"
+                  placeholder="Enter shop name"
+                  className="w-full"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="Enter phone number"
+                  className="w-full"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  name="address"
+                  type="text"
+                  placeholder="Enter complete address"
+                  className="w-full"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {["fssai", "gst", "price_menu"].map((field) => (
+                <div key={field} className="space-y-2">
+                  <Label htmlFor={field} className="flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    {field
+                      .split("_")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
+                      .join(" ")}
+                  </Label>
+                  <Input
+                    id={field}
+                    name={field}
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    required
+                  />
+                  {fileErrors[field] && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{fileErrors[field]}</AlertDescription>
+                    </Alert>
+                  )}
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Maximum file size: 5MB. Accepted formats: PDF
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isUploading || hasFileErrors}
+              className="w-full"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading Files...
+                </>
+              ) : (
+                "Create Vendor"
+              )}
+            </Button>
+          </fieldset>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
