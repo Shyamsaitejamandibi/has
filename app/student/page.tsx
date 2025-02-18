@@ -1,70 +1,37 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
-// import student from "@/actions/student";
-
-const vendors = [
-  {
-    id: 1,
-    shopName: "Vendor 1",
-    status: "Accepted",
-  },
-  {
-    id: 2,
-    shopName: "Vendor 2",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    shopName: "Vendor 3",
-    status: "Open",
-  },
-  {
-    id: 4,
-    shopName: "Vendor 4",
-    status: "Closed",
-  },
-];
+import { student } from "@/actions/student";
 
 const StudentDashboard = async () => {
-  // const vendors = await student();
+  const vendors = await student();
 
   return (
     <div className="container py-8 animate-fadeIn">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Available Vendors</h1>
-          <p className="text-muted-foreground">
-            Check the status of campus vendors
-          </p>
-        </div>
-        <div className="grid gap-6">
-          {vendors.map((vendor) => (
-            <Card key={vendor.id}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xl font-bold">
-                  {vendor.shopName}
-                </CardTitle>
-                <StatusBadge
-                  status={
-                    vendor.status.toLowerCase() as
-                      | "pending"
-                      | "reviewing"
-                      | "accepted"
-                      | "rejected"
-                      | "open"
-                      | "closed"
-                  }
-                />
-              </CardHeader>
-              <CardContent>
-                {/* vendor description */}
-                <div className="text-muted-foreground">
-                  <p>Hello how are you </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="max-w-2xl mx-auto text-center">
+        <h1 className="text-4xl font-extrabold mb-3">Campus Vendors</h1>
+        <p className="text-lg text-muted-foreground mb-6">
+          Check the status of your favorite campus vendors in real time.
+        </p>
+      </div>
+      <div className="grid gap-6 px-10">
+        {vendors.map((vendor, i) => (
+          <Card
+            key={i}
+            className="p-4 shadow-lg max-w-96 hover:shadow-xl transition duration-300"
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                {vendor.shopName}
+              </CardTitle>
+              <StatusBadge status={vendor.shopStatus} />
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                More details about the vendor can be displayed here.
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

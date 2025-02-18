@@ -1,116 +1,80 @@
-"use client";
+import { auth } from "@/auth";
+import db from "@/lib/db";
+import { redirect } from "next/navigation";
+import { ApprovalButton } from "./_components/approval-button";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+export default async function AdminDashboard() {
+  const session = await auth();
+  if (!session) {
+    redirect("/");
+  }
 
-interface Vendor {
-  id: number;
-  shopName: string;
-  status: string;
-  phoneNumber: string;
-  address: string;
-  fssaiLicense: string;
-  menu: string;
-}
+  const admins = await db.user.findMany({
+    where: {
+      role: "ADMIN",
+    },
+  });
 
-export default function AdminDashboard() {
-  const [vendors, setVendors] = useState<Vendor[]>([]);
+  if (!admins.find((admin) => admin.email === session.user?.email)) {
+    redirect("/");
+  }
 
-  useEffect(() => {
-    // In a real application, you would fetch the vendor data from your backend
-    // For this example, we'll just simulate it
-    setVendors([
-      {
-        id: 1,
-        shopName: "Vendor A",
-        status: "Reviewing",
-        phoneNumber: "1234567890",
-        address: "Address A",
-        fssaiLicense: "license_a.pdf",
-        menu: "menu_a.pdf",
-      },
-      {
-        id: 2,
-        shopName: "Vendor B",
-        status: "Accepted",
-        phoneNumber: "2345678901",
-        address: "Address B",
-        fssaiLicense: "license_b.pdf",
-        menu: "menu_b.pdf",
-      },
-      {
-        id: 3,
-        shopName: "Vendor C",
-        status: "Verifying Documents",
-        phoneNumber: "3456789012",
-        address: "Address C",
-        fssaiLicense: "license_c.pdf",
-        menu: "menu_c.pdf",
-      },
-    ]);
-  }, []);
-
-  const handleStatusUpdate = (id: number, newStatus: string) => {
-    // Here you would typically send the status update to your backend
-    setVendors(
-      vendors.map((vendor) =>
-        vendor.id === id ? { ...vendor, status: newStatus } : vendor
-      )
-    );
-  };
+  const vendors = await db.vendor.findMany({});
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-      <div className="space-y-4">
-        {vendors.map((vendor) => (
-          <div key={vendor.id} className="p-4 bg-gray-100 rounded">
-            <h2 className="text-xl font-semibold">{vendor.shopName}</h2>
-            <p>Current Status: {vendor.status}</p>
-            <p>Phone: {vendor.phoneNumber}</p>
-            <p>Address: {vendor.address}</p>
-            <p>
-              FSSAI License:{" "}
-              <a
-                href={vendor.fssaiLicense}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                View
-              </a>
-            </p>
-            <p>
-              Menu:{" "}
-              <a
-                href={vendor.menu}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                View
-              </a>
-            </p>
-            <div className="mt-2 space-x-2">
-              <Button onClick={() => handleStatusUpdate(vendor.id, "Accepted")}>
-                Accept
-              </Button>
-              <Button
-                onClick={() => handleStatusUpdate(vendor.id, "Reviewing")}
-              >
-                Review
-              </Button>
-              <Button
-                onClick={() =>
-                  handleStatusUpdate(vendor.id, "Verifying Documents")
-                }
-              >
-                Verify Documents
-              </Button>
+    <div className="p-8 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-center">Admin Dashboard</h1>
+
+      {vendors.length === 0 ? (
+        <p className="text-center text-gray-500">No vendors available.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {vendors.map((vendor) => (
+            <div
+              key={vendor.id}
+              className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
+            >
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {vendor.shopName}
+                </h2>
+                <p className="text-gray-600">{vendor.vendorStatus}</p>
+              </div>
+              <p className="text-gray-600">Owner: {vendor.name}</p>
+              <p className="text-gray-600">Phone: {vendor.phone}</p>
+              <p className="text-gray-600">Email: {vendor.email}</p>
+              <p className="text-gray-600">Address: {vendor.address}</p>
+
+              <div className="mt-4 space-x-2">
+                <a
+                  href={vendor.fssai_url}
+                  target="_blank"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                >
+                  View FSSAI
+                </a>
+                <a
+                  href={vendor.gst_url}
+                  target="_blank"
+                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                >
+                  View GST
+                </a>
+                <a
+                  href={vendor.price_menu_url}
+                  target="_blank"
+                  className="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600"
+                >
+                  View Price Menu
+                </a>
+              </div>
+              <div className="mt-4">
+                <ApprovalButton id={vendor.id} />
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
