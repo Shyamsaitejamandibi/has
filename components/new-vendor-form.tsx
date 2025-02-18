@@ -1,7 +1,7 @@
 "use client";
 
 import { createVendor } from "@/actions/vendor";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, startTransition } from "react";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -67,8 +67,10 @@ export default function MyForm() {
       formData.set("gst_url", gstBlob.url);
       formData.set("price_menu_url", priceMenuBlob.url);
 
-      // Submit the form with URLs
-      await formAction(formData);
+      // Dispatch the action correctly inside startTransition
+      startTransition(() => {
+        formAction(formData);
+      });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to upload files"
@@ -83,7 +85,7 @@ export default function MyForm() {
       onSubmit={handleSubmit}
       className="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md space-y-4"
     >
-      <fieldset disabled={isPending || isUploading} className="space-y-3">
+      <fieldset disabled={isUploading} className="space-y-3">
         <legend className="text-lg font-semibold">Vendor Details</legend>
         <div>
           <Label htmlFor="name" className="block text-sm font-medium">
@@ -127,16 +129,8 @@ export default function MyForm() {
           </Label>
           <Input id="price_menu" name="price_menu" type="file" required />
         </div>
-        <Button
-          type="submit"
-          disabled={isPending || isUploading}
-          className="w-full mt-4"
-        >
-          {isUploading
-            ? "Uploading Files..."
-            : isPending
-            ? "Creating..."
-            : "Create Vendor"}
+        <Button type="submit" disabled={isUploading} className="w-full mt-4">
+          {isUploading ? "Uploading Files..." : "Create Vendor"}
         </Button>
       </fieldset>
     </form>
