@@ -100,10 +100,11 @@ export default function MyForm() {
 
       // Create new FormData with only the required fields
       const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("shopName", form.shopName);
-      formData.append("phone", form.phone);
-      formData.append("address", form.address);
+
+      formData.append("shopName", (form.shopName as HTMLInputElement).value);
+      formData.append("name", (form.name as unknown as HTMLInputElement).value);
+      formData.append("phone", (form.phone as HTMLInputElement).value);
+      formData.append("address", (form.address as HTMLInputElement).value);
       formData.append("fssai_url", fssaiBlob.url);
       formData.append("gst_url", gstBlob.url);
       formData.append("price_menu_url", priceMenuBlob.url);

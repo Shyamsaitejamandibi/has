@@ -18,20 +18,32 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://iitmhas.com"),
-  title: "CMGFS - Canteen Management System",
-  description: "A modern canteen management system for food services",
+  title: "IIT Madras Hostel Automation System",
+  description:
+    "Official food ordering and canteen management system for IIT Madras hostels",
   keywords: [
+    "IIT Madras",
+    "hostel automation",
+    "food ordering",
     "canteen management",
-    "food service",
-    "vendor management",
-    "student orders",
-    "campus food",
+    "mess management",
+    "student portal",
   ],
   authors: [
     {
-      name: "CMGFS Team",
+      name: "IIT Madras Hostel Affairs",
+      url: "https://iitmhas.com",
     },
   ],
+  openGraph: {
+    title: "IIT Madras Hostel Automation System",
+    description:
+      "Official food ordering and canteen management system for IIT Madras hostels",
+    url: "https://iitmhas.com",
+    siteName: "IIT Madras HAS",
+    locale: "en_IN",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
