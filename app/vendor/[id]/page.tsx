@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@/app/(auth)/auth";
 import db from "@/lib/db";
 import { redirect } from "next/navigation";
 import { VendorDashboard } from "../_components/vendor-dashboard";

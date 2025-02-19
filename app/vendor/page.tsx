@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth } from "@/app/(auth)/auth";
 import db from "@/lib/db";
 import NewVendorForm from "@/components/new-vendor-form";
 

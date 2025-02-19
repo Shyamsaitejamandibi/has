@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/auth";
+import { auth } from "@/app/(auth)/auth";
 import db from "@/lib/db";
 
 export const updateShopStatus = async (

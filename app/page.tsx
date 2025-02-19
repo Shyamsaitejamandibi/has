@@ -1,16 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/auth";
-import { SignIn } from "@/components/sign-in";
-import SignOut from "@/components/sign-out";
 
 export default async function Home() {
-  const session = await auth();
-
-  if (!session) {
-    return <SignIn />;
-  }
-
   return (
     <div>
       {/* Navbar */}
@@ -25,16 +16,6 @@ export default async function Home() {
                 Vendor Management
               </Link>
             </div>
-            <div className="flex items-center">
-              {session ? (
-                <div className="flex items-center space-x-4">
-                  <span className="text-gray-800">{session.user?.email}</span>
-                  <SignOut />
-                </div>
-              ) : (
-                <SignIn />
-              )}
-            </div>
           </div>
         </div>
       </nav>
@@ -44,18 +25,14 @@ export default async function Home() {
         <h1 className="text-4xl font-bold mb-8">
           Welcome to Vendor Management System
         </h1>
-        {session ? (
-          <div className="space-x-4">
-            <Link href="/vendor">
-              <Button>Vendor</Button>
-            </Link>
-            <Link href="/student">
-              <Button>Student</Button>
-            </Link>
-          </div>
-        ) : (
-          <p className="text-lg text-gray-600">Please sign in to continue.</p>
-        )}
+        <div className="space-x-4">
+          <Link href="/vendor">
+            <Button>Vendor</Button>
+          </Link>
+          <Link href="/student">
+            <Button>Student</Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
