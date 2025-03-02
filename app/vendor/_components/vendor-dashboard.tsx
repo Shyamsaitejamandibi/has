@@ -1,4 +1,4 @@
-import type { Vendor } from "@prisma/client";
+import type { Complaint, Vendor } from "@prisma/client";
 import { UpdateShopStatus } from "./update-shop-status";
 import {
   Card,
@@ -10,7 +10,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-export const VendorDashboard = ({ vendor }: { vendor: Vendor }) => {
+export const VendorDashboard = ({
+  vendor,
+  complaints,
+}: {
+  vendor: Vendor;
+  complaints: Complaint[];
+}) => {
   return (
     <div className="container mx-auto py-8">
       <Card>
@@ -33,12 +39,6 @@ export const VendorDashboard = ({ vendor }: { vendor: Vendor }) => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-2">Vendor Information</h2>
-              <p className="text-sm text-muted-foreground">
-                Vendor ID: {vendor.id}
-              </p>
-            </div>
             <Separator />
             {vendor.vendorStatus === "APPROVED" ? (
               <UpdateShopStatus
@@ -55,6 +55,27 @@ export const VendorDashboard = ({ vendor }: { vendor: Vendor }) => {
               </div>
             )}
           </div>
+          {complaints.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold mb-2">Complaints</h2>
+              <div className="grid gap-4">
+                {complaints.map((complaint, i) => (
+                  <Card key={i}>
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold">
+                        {complaint.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-600">
+                        {complaint.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

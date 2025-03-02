@@ -1,10 +1,10 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
-import { student } from "@/actions/student";
+import { RaiseComplaintDialog } from "./_components/raise-complaint";
+import { student } from "@/lib/db/queries";
 
 const StudentDashboard = async () => {
   const vendors = await student();
-
   return (
     <div className="container py-8 animate-fadeIn">
       <div className="max-w-2xl mx-auto text-center">
@@ -25,10 +25,14 @@ const StudentDashboard = async () => {
               </CardTitle>
               <StatusBadge status={vendor.shopStatus} />
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <p className="text-sm text-gray-600">
                 More details about the vendor can be displayed here.
               </p>
+              <RaiseComplaintDialog
+                vendorShopname={vendor.shopName}
+                vendorId={vendor.id}
+              />
             </CardContent>
           </Card>
         ))}

@@ -2,7 +2,7 @@ import "server-only";
 
 import { genSaltSync, hashSync } from "bcrypt-ts";
 import db from "../db";
-import { User } from "@prisma/client";
+import { Complaint, User } from "@prisma/client";
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
@@ -31,5 +31,42 @@ export async function createUser(email: string, password: string) {
   } catch (error) {
     console.error("Failed to create user in database");
     throw error;
+  }
+}
+
+export const student = async () => {
+  const vendors = db.vendor.findMany({
+    where: {
+      vendorStatus: "APPROVED",
+    },
+    select: {
+      id: true,
+      shopName: true,
+      shopStatus: true,
+    },
+  });
+
+  return vendors;
+};
+
+export async function getComplaintById(
+  complaintId: string
+): Promise<Complaint | null> {
+  try {
+    return await db.complaint.findUnique({
+      where: {
+        id: complaintId,
+      },
+      include: {
+        vendor: {
+          select: {
+            shopName: true,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Failed to get complaint from database:", error);
+    return null;
   }
 }

@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -19,8 +16,27 @@ enum Role {
   ADMIN
 }
 
+enum VendorStatus {
+  PENDING
+  REVIEWING
+  APPROVED
+  REJECTED
+}
+
+enum ShopStatus {
+  OPEN
+  CLOSED
+}
+
+enum ComplaintStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
 model User {
-  id       String  @id @default(cuid())
+  id       String  @id @default(dbgenerated("floor(random() * 90000 + 10000)::text"))
   name     String?
   email    String  @unique
   password String
@@ -32,7 +48,7 @@ model User {
 }
 
 model Vendor {
-  id             String       @id @default(cuid())
+  id             String       @id @default(dbgenerated("floor(random() * 90000 + 10000)::text"))
   name           String
   shopName       String
   phone          String
@@ -43,19 +59,24 @@ model Vendor {
   price_menu_url String
   vendorStatus   VendorStatus @default(PENDING)
   shopStatus     ShopStatus   @default(CLOSED)
+  complaints     Complaint[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum VendorStatus {
-  PENDING
-  REVIEWING
-  APPROVED
-  REJECTED
-}
+model Complaint {
+  id          String          @id @default(dbgenerated("floor(random() * 90000 + 10000)::text"))
+  name        String
+  email       String
+  contact     String
+  type        String
+  subject     String
+  description String
+  status      ComplaintStatus @default(PENDING)
+  vendorId    String
+  vendor      Vendor          @relation(fields: [vendorId], references: [id])
 
-enum ShopStatus {
-  OPEN
-  CLOSED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

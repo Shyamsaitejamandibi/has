@@ -20,9 +20,15 @@ export default async function VendorDashboardPage({
     },
   });
 
+  const complaints = await db.complaint.findMany({
+    where: {
+      vendorId: param.id,
+    },
+  });
+
   if (!vendor) {
     return <div>Vendor not found</div>;
   }
 
-  return <VendorDashboard vendor={vendor} />;
+  return <VendorDashboard vendor={vendor} complaints={complaints} />;
 }
